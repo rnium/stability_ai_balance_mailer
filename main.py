@@ -5,6 +5,9 @@ from email.message import EmailMessage
 from email.utils import formataddr
 import ssl
 import smtplib
+from pathlib import Path
+
+BASE_DIR = Path(__file__).resolve().parent
 
 load_dotenv()
 
@@ -20,7 +23,8 @@ from datetime import datetime
 def write_log(text, filename="log.txt"):
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     log_entry = f"{timestamp} - {text}\n"
-    with open(filename, "a") as file:
+    filepath = BASE_DIR / filename
+    with open(filepath, "a") as file:
         file.write(log_entry)
 
 
@@ -40,6 +44,7 @@ def get_balance():
 
     payload = response.json()
     return payload['credits']
+
 
 def send_html_email(receiver, subject, body):
     em = EmailMessage()
