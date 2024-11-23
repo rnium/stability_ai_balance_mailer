@@ -54,14 +54,19 @@ def send_html_email(receiver, subject, body):
         smtp.login(SENDER, PASSWORD)
         smtp.sendmail(SENDER, receiver, em.as_string())
 
-
+def get_msg(balance):
+    msg = f"""<h1>Appnotrix AI image generator's credit is running low.</h1></br>
+    <h2>Your current credit balance is <b>{balance}</b>
+    """
+    return msg
+    
 if __name__ == '__main__':
     try:
         balance = get_balance()
     except Exception as e:
         write_log(f'Cannot get the balance: {str(e)}', 'error.txt')
     if balance < MIN_BALANCE:
-        message_body = f"<h3>Your current credit balance is <b>{balance}</b></h3>"
+        message_body = get_msg(balance)
         try:
             send_html_email(
                 NOTIF_RECIEVER,
