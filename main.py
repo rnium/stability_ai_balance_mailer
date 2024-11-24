@@ -35,8 +35,9 @@ def write_log(text, filename="log.txt"):
 
 
 def entry_last_run():
-    with open('last_run.dat', 'w') as f:
-        f.write(get_timestamp_str())
+    filepath = BASE_DIR / 'last_run.dat'
+    with open(filepath, 'w') as f:
+        f.write(get_timestamp_str() + '\n')
 
 
 def get_balance():
