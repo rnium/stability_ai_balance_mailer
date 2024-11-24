@@ -6,6 +6,8 @@ from email.utils import formataddr
 import ssl
 import smtplib
 from pathlib import Path
+from datetime import datetime
+
 
 BASE_DIR = Path(__file__).resolve().parent
 
@@ -18,14 +20,23 @@ EMAIL_PORT = os.getenv('EMAIL_PORT')
 NOTIF_RECIEVER = os.getenv('NOTIF_RECIEVER')
 MIN_BALANCE = float(os.getenv('MIN_BALANCE'))
 
-from datetime import datetime
+
+
+def get_timestamp_str():
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    return timestamp
+
 
 def write_log(text, filename="log.txt"):
-    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    log_entry = f"{timestamp} - {text}\n"
+    log_entry = f"{get_timestamp_str()} - {text}\n"
     filepath = BASE_DIR / filename
     with open(filepath, "a") as file:
         file.write(log_entry)
+
+
+def entry_last_run():
+    with open('last_run.dat', 'w') as f:
+        f.write(get_timestamp_str())
 
 
 def get_balance():
@@ -48,7 +59,7 @@ def get_balance():
 
 def send_html_email(receiver, subject, body):
     em = EmailMessage()
-    em['From'] = formataddr(("Balance Alert", SENDER))
+    em['From'] = formataddr(("Appnotrix AI", SENDER))
     em['To'] = receiver
     em['Subject'] = subject
     em.set_content(body, subtype='html')
@@ -59,12 +70,15 @@ def send_html_email(receiver, subject, body):
         smtp.login(SENDER, PASSWORD)
         smtp.sendmail(SENDER, receiver, em.as_string())
 
+
 def get_msg(balance):
     msg = f"""<h1>Appnotrix AI image generator's credit is running low.</h1></br>
-    <h2>Your current credit balance is <b>{balance}</b>
+    <h2>Your current credit balance is <b style="color: red;">{balance}</b>.</h2>
+    <p>You are receiving this email because your minimum maintainable balance is set to {MIN_BALANCE} credits.</p>
     """
     return msg
-    
+
+
 if __name__ == '__main__':
     try:
         balance = get_balance()
@@ -75,10 +89,11 @@ if __name__ == '__main__':
         try:
             send_html_email(
                 NOTIF_RECIEVER,
-                'Stability AI Low Balance Alert',
+                'Low Balance Alert',
                 message_body
             )
         except Exception as e:
             write_log(f'Mail Sending Error: {str(e)}', 'error.txt')
         else:
             write_log(f'Mail sent to {NOTIF_RECIEVER}')
+    entry_last_run()
